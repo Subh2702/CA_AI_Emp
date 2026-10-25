@@ -12,15 +12,17 @@ services:
       - key: UI_HOST
         value: 0.0.0.0
       - key: DEFAULT_PROVIDER
-        value: anthropic
+        value: huggingface
       - key: ALLOW_AUTO
         value: "0"
       - key: UI_USER
         value: admin
       - key: UI_PASSWORD
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: HF_TOKEN
         sync: false
+      - key: HF_MODEL
+        value: Qwen/Qwen2.5-72B-Instruct
       - key: ERP_PASSWORD
         generateValue: true
       - key: ERP_API_KEY

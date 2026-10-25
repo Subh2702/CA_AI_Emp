@@ -1,5 +1,5 @@
 """Headless regression: run scenarios against the live console (python3 run.py must be running).
-usage: python3 tests/run_scenarios.py [--provider ollama] [scenario ...] [--modes approve,deny]"""
+usage: python3 tests/run_scenarios.py [--provider ollama|huggingface] [scenario ...] [--modes approve,deny]"""
 import argparse
 import json
 import time

@@ -44,7 +44,7 @@ Project2/
   erp/server.py             # the TARGET system: "Acme ERP" (stdlib http.server + sqlite3)
   aiemployee/
     config.py               # URLs, credentials (env-overridable), thresholds
-    llm.py                  # provider abstraction: Ollama + Anthropic
+    llm.py                  # provider abstraction: Ollama + Hugging Face
     knowledge.py            # chunked keyword retrieval over company/knowledge
     webtool.py              # browser-like HTTP client + HTML->text renderer
     tools.py                # tool specs + TaskTools (per-document tool belt with guards)
@@ -135,8 +135,7 @@ A real web application, not a mock of the agent's tools. Stdlib `ThreadingHTTPSe
 Provider-neutral message format (`system`/`user`/`assistant{tool_calls}`/`tool`) and two adapters:
 * **Ollama** (`/api/chat`, native tool calling, `temperature 0.1`, `num_ctx 16384`, `format: json` for JSON mode). Default model
   `qwen3:4b-instruct`. This is for prototyping only, as requested.
-* **Anthropic** (`/v1/messages`): converts to content blocks (`tool_use`/`tool_result`), merges consecutive tool results into one
-  user message, default model `claude-sonnet-5-5` (overridable via `ANTHROPIC_MODEL`); needs `ANTHROPIC_API_KEY`.
+* **Hugging Face** (Inference Providers, OpenAI-compatible `/v1/chat/completions` with `tools`): maps messages to `tool_calls`/`tool_call_id`, parses JSON-string arguments, default model `Qwen/Qwen2.5-72B-Instruct` (override via `HF_MODEL`); needs `HF_TOKEN`.
 * `extract_json()` tolerates fenced/embedded JSON. `make_llm(provider)` is selected per run from the UI.
 
 ### 5.4 Company knowledge (`knowledge.py`, `company/knowledge/`)
@@ -242,7 +241,7 @@ Thread-safe append-only log. Each event: `{i, ts, kind, ...}`. Kinds include `ru
 ### 5.11 UI (`ui_server.py`, `ui/index.html`)
 Endpoints: `GET /` (page), `GET /api/scenarios`, `GET /api/poll?since=N` (run snapshot + new events), `POST /api/run`
 (`request, provider, scenario, auto`; 409 if a run is active), `POST /api/approval` (`id, decision, note`).
-The page: request box, scenario selector with description, provider selector (local vs Claude API), approvals mode
+The page: request box, scenario selector with description, provider selector (local vs Hugging Face API), approvals mode
 (ask me / auto-approve / auto-deny for tests); live audit feed; progress chips; per-document status; the understood work order;
 **"Waiting for a human"** card with Approve/Deny (or an answer box for questions); final verified outcome table with evidence and
 invariants. Plain JS, 1-second polling, light/dark via `prefers-color-scheme`.
@@ -289,7 +288,7 @@ The local 4B model was a useful adversary. Each failure led to a structural fix 
   The 3 failures were in deny mode, on different documents, none repeated across runs (a duplicate labelled `escalated`; a clean
   invoice claimed as duplicate with nothing paid; a clean 1.5%-over invoice escalated). **No wrong payment occurred in any run**,
   and the verifier flagged every deviation. Interpretation: remaining misses are model reliability (stochastic), not governance gaps.
-* Not yet done: running the matrix on the Claude API; repeated trials for pass-rate statistics.
+* Not yet done: running the matrix on the Hugging Face API; repeated trials for pass-rate statistics.
 
 ---
 
@@ -326,8 +325,8 @@ The local 4B model was a useful adversary. Each failure led to a structural fix 
 ```
 python3 run.py                       # ERP :8001 + console :8080 (stdlib only)
 # open http://127.0.0.1:8080  -> choose scenario/provider/approvals -> Run AI employee
-python3 tests/run_scenarios.py [scenario ...] [--provider ollama|anthropic] [--modes approve,deny]
-# Claude API: export ANTHROPIC_API_KEY=...   (ANTHROPIC_MODEL optional; OLLAMA_MODEL for local)
+python3 tests/run_scenarios.py [scenario ...] [--provider ollama|huggingface] [--modes approve,deny]
+# Hugging Face API: export HF_TOKEN=...   (HF_MODEL optional; OLLAMA_MODEL for local)
 ```
 Prerequisite for local mode: Ollama running with `qwen3:4b-instruct` (tool-capable). Reset is automatic at run start.
 

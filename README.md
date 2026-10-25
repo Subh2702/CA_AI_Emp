@@ -7,10 +7,10 @@ and an independently verified, auditable report.
 ## Run
 ```
 python3 run.py            # starts the Acme ERP (:8001) and the console (:8080). Python stdlib only.
-# open http://127.0.0.1:8080, pick "Local model (Ollama)" or "Claude API", press Run
+# open http://127.0.0.1:8080, pick "Local model (Ollama)" or "Hugging Face API", press Run
 ```
 Local model: Ollama `qwen3:4b-instruct` (override with `OLLAMA_MODEL`). Frontier option:
-`export ANTHROPIC_API_KEY=...` (model via `ANTHROPIC_MODEL`). Restart `run.py` to reset the ERP data.
+`export HF_TOKEN=...` (model via `HF_MODEL`). Restart `run.py` to reset the ERP data.
 
 ## Architecture
 | Stage | What happens | Code |

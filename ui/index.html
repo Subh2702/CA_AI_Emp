@@ -34,7 +34,7 @@ small,.mute{color:var(--mute)}ul{margin:4px 0;padding-left:18px}
     <textarea id="req" rows="3">Process this week's vendor invoices and get them paid.</textarea>
     <div class="row"><select id="scen" onchange="desc()"></select></div><div class="mute" id="sdesc" style="margin-top:4px"></div>
     <div class="row"><select id="auto" style="width:auto"><option value="">Approvals: ask me</option><option value="approve">Approvals: auto-approve (test)</option><option value="deny">Approvals: auto-deny (test)</option></select></div>
-    <div class="row"><select id="prov" style="width:auto"><option value="ollama">Local model (Ollama)</option><option value="anthropic">Claude API (ANTHROPIC_API_KEY)</option></select>
+    <div class="row"><select id="prov" style="width:auto"><option value="ollama">Local model (Ollama)</option><option value="huggingface">Hugging Face API (HF_TOKEN)</option></select>
     <button id="go" onclick="start()">Run AI employee</button><span id="st" class="mute"></span></div>
   </div>
   <div class="card" id="apvcard" style="display:none"><h2>Waiting for a human</h2><div id="apv"></div></div>

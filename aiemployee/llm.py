@@ -1,4 +1,4 @@
-"""Model providers behind one interface. Local Ollama for the prototype; Anthropic API optional.
+"""Model providers behind one interface. Local Ollama for the prototype; Hugging Face Inference API for hosted use.
 
 Internal message format (provider-neutral):
   {"role": "system"|"user", "content": str}
@@ -63,46 +63,47 @@ class Ollama:
         return {"content": out.get("content", ""), "tool_calls": calls}
 
 
-class Anthropic:
-    name = "anthropic"
+class HuggingFace:
+    """Hugging Face Inference Providers: OpenAI-compatible chat completions with tool calling."""
+    name = "huggingface"
 
     def __init__(self, model=None):
-        self.model = model or config.ANTHROPIC_MODEL
-        self.key = os.environ.get("ANTHROPIC_API_KEY")
+        self.model = model or config.HF_MODEL
+        self.key = os.environ.get("HF_TOKEN")
         if not self.key:
-            raise RuntimeError("ANTHROPIC_API_KEY is not set")
+            raise RuntimeError("HF_TOKEN is not set")
 
     def chat(self, messages, tools=None, json_mode=False):
-        system = "\n\n".join(m["content"] for m in messages if m["role"] == "system")
-        if json_mode:
-            system += "\n\nRespond with a single JSON object and nothing else."
         msgs = []
         for m in messages:
-            if m["role"] == "system":
-                continue
-            if m["role"] == "assistant":
-                blocks = [{"type": "text", "text": m["content"]}] if m.get("content") else []
-                blocks += [{"type": "tool_use", "id": t["id"], "name": t["name"], "input": t["args"]}
-                           for t in m.get("tool_calls", [])]
-                msgs.append({"role": "assistant", "content": blocks})
+            if m["role"] == "assistant" and m.get("tool_calls"):
+                msgs.append({"role": "assistant", "content": m.get("content") or None,
+                             "tool_calls": [{"id": t["id"], "type": "function",
+                                             "function": {"name": t["name"], "arguments": json.dumps(t["args"])}}
+                                            for t in m["tool_calls"]]})
             elif m["role"] == "tool":
-                block = {"type": "tool_result", "tool_use_id": m["id"], "content": m["content"]}
-                if msgs and msgs[-1]["role"] == "user" and isinstance(msgs[-1]["content"], list):
-                    msgs[-1]["content"].append(block)
-                else:
-                    msgs.append({"role": "user", "content": [block]})
+                msgs.append({"role": "tool", "tool_call_id": m["id"], "content": m["content"]})
             else:
-                msgs.append({"role": "user", "content": m["content"]})
-        body = {"model": self.model, "max_tokens": 2048, "system": system, "messages": msgs}
+                msgs.append({"role": m["role"], "content": m["content"]})
+        if json_mode:
+            msgs.append({"role": "user", "content": "Respond with a single JSON object and nothing else."})
+        body = {"model": self.model, "messages": msgs, "temperature": 0.1, "max_tokens": 2048}
         if tools:
-            body["tools"] = [{"name": t["name"], "description": t["description"], "input_schema": t["parameters"]}
-                             for t in tools]
-        out = _post("https://api.anthropic.com/v1/messages", body,
-                    {"x-api-key": self.key, "anthropic-version": "2023-06-01"})
-        text = "".join(b["text"] for b in out["content"] if b["type"] == "text")
-        calls = [{"id": b["id"], "name": b["name"], "args": b["input"]} for b in out["content"] if b["type"] == "tool_use"]
-        return {"content": text, "tool_calls": calls}
+            body["tools"] = [{"type": "function", "function": t} for t in tools]
+            body["tool_choice"] = "auto"
+        out = _post(config.HF_BASE_URL + "/chat/completions", body,
+                    {"Authorization": "Bearer " + self.key})["choices"][0]["message"]
+        calls = []
+        for c in out.get("tool_calls") or []:
+            args = c["function"].get("arguments") or {}
+            if isinstance(args, str):
+                try:
+                    args = json.loads(args or "{}")
+                except ValueError:
+                    args = {}
+            calls.append({"id": c.get("id") or uuid.uuid4().hex[:8], "name": c["function"]["name"], "args": args})
+        return {"content": out.get("content") or "", "tool_calls": calls}
 
 
 def make_llm(provider):
-    return {"ollama": Ollama, "anthropic": Anthropic}[provider]()
+    return {"ollama": Ollama, "huggingface": HuggingFace}[provider]()
