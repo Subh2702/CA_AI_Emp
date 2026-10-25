@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: ai-employee
+    runtime: python
+    plan: free
+    buildCommand: echo "no dependencies: Python standard library only"
+    startCommand: python3 run.py
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: UI_HOST
+        value: 0.0.0.0
+      - key: DEFAULT_PROVIDER
+        value: anthropic
+      - key: ALLOW_AUTO
+        value: "0"
+      - key: UI_USER
+        value: admin
+      - key: UI_PASSWORD
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ERP_PASSWORD
+        generateValue: true
+      - key: ERP_API_KEY
+        generateValue: true

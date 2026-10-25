@@ -76,6 +76,7 @@ function render(r){if(!r)return;$('go').disabled=r.status=='running';$('st').tex
   ${p.escalations.length?`<p><b>Escalated to humans</b></p><ul>${p.escalations.map(e=>`<li>${esc(e.file)}: ${esc(e.reason)}</li>`).join('')}</ul>`:''}`}}
 async function poll(){try{const d=await (await fetch('/api/poll?since='+since)).json();render(d.run);
  if(d.events.length){const l=$('log'),bot=l.scrollTop+l.clientHeight>=l.scrollHeight-40;l.insertAdjacentHTML('beforeend',d.events.map(evLine).join(''));since=d.events[d.events.length-1].i+1;if(bot)l.scrollTop=l.scrollHeight}}catch(e){}setTimeout(poll,1000)}
+fetch('/api/config').then(r=>r.json()).then(c=>{$('prov').value=c.provider;if(!c.allow_auto)$('auto').parentElement.style.display='none'});
 let SC=[];function desc(){const s=SC.find(x=>x.id==$('scen').value);$('sdesc').textContent=s?`${s.documents} documents · ${s.description}`:''}
 fetch('/api/scenarios').then(r=>r.json()).then(d=>{SC=d;$('scen').innerHTML=d.map(s=>`<option value="${s.id}">${esc(s.title)}</option>`).join('');desc()});
 poll();

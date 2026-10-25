@@ -1,3 +1,5 @@
+import base64
+import hmac
 import json
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -21,8 +23,25 @@ class H(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _authorized(self):
+        if not config.UI_PASSWORD:
+            return True
+        got = self.headers.get("Authorization", "")
+        want = "Basic " + base64.b64encode(f"{config.UI_USER}:{config.UI_PASSWORD}".encode()).decode()
+        if hmac.compare_digest(got, want):
+            return True
+        self.send_response(401)
+        self.send_header("WWW-Authenticate", 'Basic realm="AI Employee Console"')
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+        return False
+
     def do_GET(self):
         path, _, qs = self.path.partition("?")
+        if path == "/healthz":
+            return self._json({"ok": True})
+        if not self._authorized():
+            return
         run = CURRENT["run"]
         if path == "/":
             data = open(INDEX, "rb").read()
@@ -31,6 +50,8 @@ class H(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
+        elif path == "/api/config":
+            self._json({"provider": config.DEFAULT_PROVIDER, "allow_auto": config.ALLOW_AUTO})
         elif path == "/api/scenarios":
             out = []
             for name in sorted(os.listdir(config.SCENARIOS_DIR)):
@@ -45,12 +66,14 @@ class H(BaseHTTPRequestHandler):
             self._json({"error": "not found"}, 404)
 
     def do_POST(self):
+        if not self._authorized():
+            return
         n = int(self.headers.get("Content-Length") or 0)
         body = json.loads(self.rfile.read(n) or b"{}")
         if self.path == "/api/run":
             if CURRENT["run"] and CURRENT["run"].status in ("starting", "running"):
                 return self._json({"error": "a run is already in progress"}, 409)
-            CURRENT["run"] = Run(body.get("request", ""), body.get("provider", "ollama"), body.get("auto") or None,
+            CURRENT["run"] = Run(body.get("request", ""), body.get("provider", "ollama"), (body.get("auto") or None) if config.ALLOW_AUTO else None,
                                   body.get("scenario", "baseline"))
             CURRENT["run"].start()
             self._json({"ok": True, "id": CURRENT["run"].id})
@@ -63,6 +86,6 @@ class H(BaseHTTPRequestHandler):
 
 
 def serve():
-    srv = ThreadingHTTPServer(("127.0.0.1", config.UI_PORT), H)
-    print(f"AI Employee console on http://127.0.0.1:{config.UI_PORT}")
+    srv = ThreadingHTTPServer((config.UI_HOST, config.UI_PORT), H)
+    print(f"AI Employee console on http://{config.UI_HOST}:{config.UI_PORT}")
     srv.serve_forever()

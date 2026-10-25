@@ -10,7 +10,12 @@ ERP_API_KEY = os.environ.get("ERP_API_KEY", "audit-key-123")
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "qwen3:4b-instruct")
 ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-UI_PORT = int(os.environ.get("UI_PORT", "8080"))
+UI_HOST = os.environ.get("UI_HOST", "127.0.0.1")
+UI_PORT = int(os.environ.get("PORT") or os.environ.get("UI_PORT", "8080"))  # Render injects PORT
+UI_USER = os.environ.get("UI_USER", "admin")
+UI_PASSWORD = os.environ.get("UI_PASSWORD", "")  # empty = no auth (local dev only)
+DEFAULT_PROVIDER = os.environ.get("DEFAULT_PROVIDER", "ollama")
+ALLOW_AUTO = os.environ.get("ALLOW_AUTO", "1") == "1"  # test-only auto-approve/deny; disable when public
 APPROVAL_THRESHOLD = 5000.00
 PO_TOLERANCE = 0.02
 SCENARIOS_DIR = os.path.join(COMPANY_DIR, "scenarios")
