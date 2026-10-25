@@ -1,0 +1,9 @@
+{
+ "title": "Chaos: repeated 503s and fast-expiring sessions",
+ "description": "Four consecutive ERP 503s on bill creation and sessions that expire every 5 requests.",
+ "chaos": {
+  "flaky": 4,
+  "ttl": 5
+ },
+ "expect": {}
+}

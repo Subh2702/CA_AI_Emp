@@ -1,0 +1,9 @@
+From: billing@hooli-cloud.example
+Subject: Invoice INV-4410
+
+Vendor: Hooli Cloud
+Invoice Number: INV-4410
+Invoice Date: 2026-10-18
+PO Reference: PO-5004
+Cloud hosting, October (includes overage)
+Total Due: USD 2,300.00

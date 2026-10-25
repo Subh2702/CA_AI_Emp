@@ -1,0 +1,5 @@
+From: news@supplychain-weekly.example
+Subject: Your weekly supply chain digest
+
+Top stories this week: freight rates soften, three tips for negotiating vendor terms,
+and our upcoming webinar on invoice automation. Unsubscribe any time.

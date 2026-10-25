@@ -1,0 +1,10 @@
+From: billing@wayne.example
+Subject: Invoice INV-W100
+
+INVOICE
+Vendor: Wayne Enterprises
+Invoice Number: INV-W100
+Invoice Date: 2026-10-20
+PO Reference: PO-5007
+Armored panels
+Total Due: USD 5,000.00

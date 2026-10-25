@@ -1,0 +1,10 @@
+From: billing@pied.example
+Subject: Invoice INV-PP1
+
+INVOICE
+Vendor: Pied Piper LLC
+Invoice Number: INV-PP1
+Invoice Date: 2026-10-20
+PO Reference: PO-5017
+Compression consulting
+Total Due: USD 1,200.00

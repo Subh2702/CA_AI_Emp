@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Employee Console</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2230;--mute:#6b7385;--line:#e3e6ec;--acc:#3b5bdb;--ok:#1f9d55;--bad:#d64545;--warn:#c98a00}
+@media (prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1a1f2a;--ink:#e6e9f0;--mute:#8f98ab;--line:#2a3140;--acc:#7c9cff;--ok:#4cc38a;--bad:#ff7a7a;--warn:#f0b840}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,sans-serif}
+header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:baseline}
+header h1{font-size:16px;margin:0}header span{color:var(--mute)}
+main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;padding:16px 20px}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:16px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:0 0 10px}
+textarea,select,input{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit}
+button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}button.bad{background:var(--bad)}button.ok{background:var(--ok)}
+button:disabled{opacity:.5}
+.row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;border:1px solid var(--line)}
+.PASS,.paid,.done{color:var(--ok)}.FAIL,.error{color:var(--bad)}.escalated{color:var(--warn)}
+.phases{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}.phase{padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+.phase.on{background:var(--acc);color:#fff;border-color:var(--acc)}.phase.past{color:var(--ink)}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:500}
+.ev{padding:5px 0;border-bottom:1px solid var(--line);font-size:13px}.ev .k{display:inline-block;min-width:92px;color:var(--mute);font-size:12px}
+.ev code{background:var(--bg);padding:1px 5px;border-radius:4px;word-break:break-all}
+#log{max-height:560px;overflow:auto}
+.apv{border:1px solid var(--warn);border-radius:8px;padding:10px;margin-bottom:8px}
+small,.mute{color:var(--mute)}ul{margin:4px 0;padding-left:18px}
+</style></head><body>
+<header><h1>AI Employee Console</h1><span>Autonomous Accounts Payable operator · Acme Corp</span></header>
+<main>
+<div>
+  <div class="card"><h2>Request</h2>
+    <textarea id="req" rows="3">Process this week's vendor invoices and get them paid.</textarea>
+    <div class="row"><select id="scen" onchange="desc()"></select></div><div class="mute" id="sdesc" style="margin-top:4px"></div>
+    <div class="row"><select id="auto" style="width:auto"><option value="">Approvals: ask me</option><option value="approve">Approvals: auto-approve (test)</option><option value="deny">Approvals: auto-deny (test)</option></select></div>
+    <div class="row"><select id="prov" style="width:auto"><option value="ollama">Local model (Ollama)</option><option value="anthropic">Claude API (ANTHROPIC_API_KEY)</option></select>
+    <button id="go" onclick="start()">Run AI employee</button><span id="st" class="mute"></span></div>
+  </div>
+  <div class="card" id="apvcard" style="display:none"><h2>Waiting for a human</h2><div id="apv"></div></div>
+  <div class="card"><h2>Progress</h2><div class="phases" id="phases"></div><div id="tasks"></div></div>
+  <div class="card" id="wocard" style="display:none"><h2>Understood work order</h2><div id="wo"></div></div>
+  <div class="card" id="repcard" style="display:none"><h2>Verified outcome</h2><div id="rep"></div></div>
+</div>
+<div><div class="card"><h2>Live audit trail</h2><div id="log"></div></div></div>
+</main>
+<script>
+const PH=['understand','plan','execute','verify','complete'];let since=0,seenApv='';
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function start(){const r=await fetch('/api/run',{method:'POST',body:JSON.stringify({request:$('req').value,provider:$('prov').value,scenario:$('scen').value,auto:$('auto').value})});
+ if(r.ok){since=0;$('log').innerHTML='';$('repcard').style.display='none'}else $('st').textContent=(await r.json()).error}
+async function decide(id,d){await fetch('/api/approval',{method:'POST',body:JSON.stringify({id,decision:d,note:$('n'+id)?.value||''})})}
+function evLine(e){const k=e.kind;let t='';
+ if(k=='tool_call')t=`<code>${esc(e.tool)}</code> <small>${esc(JSON.stringify(e.args)).slice(0,160)}</small>`;
+ else if(k=='tool_result')t=`<small>${esc(e.result).slice(0,200).replace(/\n/g,' ⏎ ')}</small>`;
+ else if(k=='governance')t=`policy: <b class="${e.action=='allow'?'ok':'escalated'}">${e.action}</b> <small>${esc(e.reason)}</small>`;
+ else if(k=='phase')t=`<b>phase → ${e.phase}</b>`;
+ else if(k=='thought')t=`<small>${esc(e.text)}</small>`;
+ else if(k=='task_finished')t=`<b>${esc(e.invoice)}</b> → <span class="${e.result.disposition}">${e.result.disposition}</span>`;
+ else if(k=='verification')t=`<b class="${e.overall}">verification ${e.overall}</b>`;
+ else t=`<small>${esc(JSON.stringify({...e,i:0,ts:0,kind:0}).slice(0,220))}</small>`;
+ return `<div class="ev"><span class="k">${k}</span>${t}</div>`}
+function render(r){if(!r)return;$('go').disabled=r.status=='running';$('st').textContent=r.status+(r.provider?' · '+r.provider:'');
+ const ci=PH.indexOf(r.phase);$('phases').innerHTML=PH.map((p,i)=>`<span class="phase ${i==ci?'on':i<ci||r.status=='done'?'past':''}">${p}</span>`).join('');
+ $('tasks').innerHTML='<table>'+r.plan.map(p=>{const res=r.results[p.file];return `<tr><td>${esc(p.file)}</td><td>${res?`<span class="${res.disposition}">${res.disposition}</span>`:`<span class="mute">${p.status}</span>`}</td><td><small>${esc(res?.reason||'')}</small></td></tr>`}).join('')+'</table>';
+ if(r.work_order){$('wocard').style.display='';const w=r.work_order,L=a=>'<ul>'+(a||[]).map(x=>`<li>${esc(typeof x=='string'?x:JSON.stringify(x))}</li>`).join('')+'</ul>';
+  $('wo').innerHTML=`<p><b>${esc(w.objective)}</b></p><p class="mute">${esc(w.interpretation)}</p><b>Procedure</b>${L(w.procedure)}<b>Needs a human</b>${L(w.approval_boundaries)}<b>Done when</b>${L(w.done_criteria)}`}
+ const key=JSON.stringify(r.approvals.map(a=>a.id));if(key!=seenApv){seenApv=key;$('apvcard').style.display=r.approvals.length?'':'none';
+  $('apv').innerHTML=r.approvals.map(a=>`<div class="apv"><b>${a.kind=='question'?'Question':'Approval needed'}</b> <small>(${esc(a.invoice)})</small><p>${esc(a.summary)}</p>
+  <input id="n${a.id}" placeholder="${a.kind=='question'?'Your answer':'Optional note'}"><div class="row">
+  ${a.kind=='question'?`<button onclick="decide('${a.id}','answer')">Send answer</button>`:`<button class="ok" onclick="decide('${a.id}','approve')">Approve</button><button class="bad" onclick="decide('${a.id}','deny')">Deny</button>`}</div></div>`).join('')}
+ if(r.report){const p=r.report;$('repcard').style.display='';
+  $('rep').innerHTML=`<p>Independent verification against live ERP state: <b class="${p.verification}">${p.verification}</b> <small>· bills ${p.erp_summary.bills_before}→${p.erp_summary.bills_after}, payments ${p.erp_summary.payments_before}→${p.erp_summary.payments_after}</small></p>
+  <table><tr><th>Document</th><th>Outcome</th><th>Check</th><th>Evidence</th></tr>${p.invoices.map(i=>`<tr><td>${esc(i.file)}</td><td class="${i.claimed}">${i.claimed}</td><td class="${i.verified}">${i.verified}${i.problems.map(x=>`<br><small>${esc(x)}</small>`).join('')}</td><td><small>${i.evidence.map(esc).join('<br>')||'—'}</small></td></tr>`).join('')}</table>
+  <p><b>Invariants</b></p><ul>${p.invariants.map(c=>`<li class="${c.ok?'PASS':'FAIL'}">${c.ok?'✓':'✗'} ${esc(c.check)}</li>`).join('')}</ul>
+  ${p.escalations.length?`<p><b>Escalated to humans</b></p><ul>${p.escalations.map(e=>`<li>${esc(e.file)}: ${esc(e.reason)}</li>`).join('')}</ul>`:''}`}}
+async function poll(){try{const d=await (await fetch('/api/poll?since='+since)).json();render(d.run);
+ if(d.events.length){const l=$('log'),bot=l.scrollTop+l.clientHeight>=l.scrollHeight-40;l.insertAdjacentHTML('beforeend',d.events.map(evLine).join(''));since=d.events[d.events.length-1].i+1;if(bot)l.scrollTop=l.scrollHeight}}catch(e){}setTimeout(poll,1000)}
+let SC=[];function desc(){const s=SC.find(x=>x.id==$('scen').value);$('sdesc').textContent=s?`${s.documents} documents · ${s.description}`:''}
+fetch('/api/scenarios').then(r=>r.json()).then(d=>{SC=d;$('scen').innerHTML=d.map(s=>`<option value="${s.id}">${esc(s.title)}</option>`).join('');desc()});
+poll();
+</script></body></html>

@@ -1,0 +1,9 @@
+From: accounts@stark-industrial.example
+Subject: Reminder: invoice INV-0877 outstanding?
+
+Vendor: Stark Industrial
+Invoice Number: INV-0877
+Invoice Date: 2026-10-02
+PO Reference: PO-5005
+Total Due: USD 760.50
+This is a friendly reminder, please pay.

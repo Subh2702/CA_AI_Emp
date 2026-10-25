@@ -1,0 +1,11 @@
+From: billing@globex-supplies.example
+Subject: Invoice INV-1001 for PO-5001
+
+INVOICE
+Vendor: Globex Supplies
+Invoice Number: INV-1001
+Invoice Date: 2026-10-14
+PO Reference: PO-5001
+Description: Office supplies, Q4 order
+Total Due: USD 1,240.00
+Payment terms: Net 30

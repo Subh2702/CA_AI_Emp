@@ -1,0 +1,9 @@
+{
+ "title": "Baseline: mixed weekly batch",
+ "description": "Clean, high-value, blocked-vendor, duplicate, PO-mismatch, non-invoice and messy-format documents.",
+ "chaos": {
+  "flaky": 1,
+  "ttl": 30
+ },
+ "expect": {}
+}

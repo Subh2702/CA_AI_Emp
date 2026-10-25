@@ -1,0 +1,11 @@
+From: billing@globex.example
+Subject: Invoice INV-G300
+
+INVOICE
+Vendor: Globex Supplies
+Invoice Number: INV-G300
+Invoice Date: 2026-10-20
+PO Reference: PO-5011
+Subtotal: USD 2,000.00
+Tax (8%): USD 160.00
+Total Due: USD 2,160.00

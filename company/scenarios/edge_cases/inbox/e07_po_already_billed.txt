@@ -1,0 +1,10 @@
+From: billing@stark.example
+Subject: Invoice INV-S500
+
+INVOICE
+Vendor: Stark Industrial
+Invoice Number: INV-S500
+Invoice Date: 2026-10-20
+PO Reference: PO-5005
+Second invoice against an old PO
+Total Due: USD 760.50

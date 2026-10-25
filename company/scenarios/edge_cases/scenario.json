@@ -1,0 +1,6 @@
+{
+ "title": "Edge cases: thresholds, tolerance, currency, bad POs",
+ "description": "Exactly $5,000 vs $5,000.01, 1.5% vs 3% over PO, tax lines, EUR, billed PO, unknown vendor, missing PO.",
+ "chaos": {},
+ "expect": {}
+}

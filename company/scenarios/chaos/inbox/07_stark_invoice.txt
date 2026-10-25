@@ -1,0 +1,9 @@
+From: accounts@stark-industrial.example
+Subject: New invoice
+
+INVOICE No. INV-0912 dated 2026-10-20
+Supplier: Stark Industrial
+Bill to: Acme Corp
+Ref PO-5006
+Industrial fasteners and fittings
+Total Due: $ 3,415.75

@@ -1,0 +1,10 @@
+From: billing@stark.example
+Subject: Invoice INV-S700
+
+INVOICE
+Vendor: Stark Industrial
+Invoice Number: INV-S700
+Invoice Date: 2026-10-20
+PO Reference: PO-5013
+Bearings
+Total Due: USD 640.00

@@ -1,0 +1,16 @@
+From: ar@initech-services.example
+Subject: October consulting invoice
+
+Hello AP team,
+
+Please find our invoice below.
+
+Vendor: Initech Services
+Invoice #: INV-2207
+Date: 2026-10-16
+Purchase order: PO-5002
+Services: Systems integration consulting (October)
+Amount due: $8,900.00
+
+Thanks,
+Initech Accounts Receivable

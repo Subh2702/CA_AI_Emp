@@ -1,0 +1,6 @@
+{
+ "title": "Inbox hygiene: duplicates in-batch, casing, wrong PO owner",
+ "description": "The same invoice arriving twice, vendor name in caps, and an invoice quoting another vendor's PO.",
+ "chaos": {},
+ "expect": {}
+}

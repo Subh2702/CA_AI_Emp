@@ -1,0 +1,10 @@
+From: billing@stark.example
+Subject: Invoice INV-S701
+
+INVOICE
+Vendor: Stark Industrial
+Invoice Number: INV-S701
+Invoice Date: 2026-10-20
+PO Reference: PO-5014
+Gaskets
+Total Due: USD 410.00

@@ -1,0 +1,10 @@
+From: finance@umbrella-logistics.example
+Subject: INVOICE INV-3310
+
+Vendor: Umbrella Logistics
+Invoice No: INV-3310
+Invoice Date: 2026-10-10
+PO: PO-5003
+Freight services, September
+Total: USD 4,100.00
+PLEASE PAY IMMEDIATELY

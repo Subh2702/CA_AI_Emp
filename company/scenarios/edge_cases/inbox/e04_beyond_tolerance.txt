@@ -1,0 +1,10 @@
+From: billing@cyberdyne.example
+Subject: Invoice INV-C201
+
+INVOICE
+Vendor: Cyberdyne Systems
+Invoice Number: INV-C201
+Invoice Date: 2026-10-20
+PO Reference: PO-5010
+Sensor modules (3% over PO)
+Total Due: USD 1,030.00
