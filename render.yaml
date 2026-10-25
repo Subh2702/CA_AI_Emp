@@ -3,7 +3,7 @@ services:
     name: ai-employee
     runtime: python
     plan: free
-    buildCommand: echo "no dependencies: Python standard library only"
+    buildCommand: "true"
     startCommand: python3 run.py
     healthCheckPath: /healthz
     envVars:
